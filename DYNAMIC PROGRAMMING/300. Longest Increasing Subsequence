@@ -1,0 +1,92 @@
+class Solution {
+public:
+    int solve(vector<int>& nums, int n, int curr, int prev,
+              vector<vector<int>>& dp) {
+        if (curr == n)
+            return 0;
+        if (dp[curr][prev + 1] != -1)
+            return dp[curr][prev + 1];
+
+        int incl = 0;
+        if (prev == -1 || nums[curr] > nums[prev]) {
+            incl = 1 + solve(nums, n, curr + 1, curr, dp);
+        }
+        int excl = 0 + solve(nums, n, curr + 1, prev, dp);
+        return dp[curr][prev + 1] = max(incl, excl);
+    }
+    int solveTab(vector<int>& nums) {
+        int n = nums.size();
+        vector<vector<int>> dp(n + 1, vector<int>(n + 1, 0));
+
+        for (int curr = n - 1; curr >= 0; curr--) {
+
+            // prev ranges from -1 to curr-1
+            // We store prev using prev+1
+            for (int prev = curr - 1; prev >= -1; prev--) {
+
+                int incl = 0;
+
+                if (prev == -1 || nums[curr] > nums[prev]) {
+                    incl = 1 + dp[curr + 1][curr + 1];
+                }
+
+                int excl = dp[curr + 1][prev + 1];
+
+                dp[curr][prev + 1] = max(incl, excl);
+            }
+        }
+
+        return dp[0][0];
+    }
+
+    int solveTabSO(vector<int>& nums) {
+        int n = nums.size();
+        // vector<vector<int>> dp(n + 1, vector<int>(n + 1, 0));
+        vector<int> currRow(n + 1, 0);
+        vector<int> nextRow(n + 1, 0);
+
+        for (int curr = n - 1; curr >= 0; curr--) {
+
+            // prev ranges from -1 to curr-1
+            // We store prev using prev+1
+            for (int prev = curr - 1; prev >= -1; prev--) {
+
+                int incl = 0;
+
+                if (prev == -1 || nums[curr] > nums[prev]) {
+                    incl = 1 + nextRow[curr + 1];
+                }
+
+                int excl = nextRow[prev + 1];
+
+                currRow[prev + 1] = max(incl, excl);
+            }
+            nextRow = currRow;
+        }
+
+        return nextRow[0];
+    }
+    int solveOptimal(vector<int>& nums) {
+        int n = nums.size();
+        vector<int> ans;
+        ans.push_back(nums[0]);
+        for (int i = 0; i < n; i++) {
+            if (nums[i] > ans.back())
+                ans.push_back(nums[i]);
+            else {
+                int idx =
+                    lower_bound(ans.begin(), ans.end(), nums[i]) - ans.begin();
+                ans[idx] = nums[i];
+            }
+        }
+        return ans.size();
+    }
+    int lengthOfLIS(vector<int>& nums) {
+
+        int n = nums.size();
+        // vector<vector<int>> dp(n, vector<int>(n + 1, -1));
+        // return solve(nums, nums.size(), 0, -1, dp);
+        // return solveTab(nums);
+        return solveOptimal(nums);
+    }
+};
